@@ -22,7 +22,7 @@ export type Query = {
 
 
 export type QueryPostArgs = {
-  id: Scalars['Int'];
+  id: Scalars['Float'];
 };
 
 export type Post = {
@@ -108,13 +108,13 @@ export type LoginMutation = (
   { __typename?: 'Mutation' }
   & { login: (
     { __typename?: 'UserResponse' }
-    & { user?: Maybe<(
-      { __typename?: 'User' }
-      & RegularUserFragment
-    )>, errors?: Maybe<Array<(
+    & { errors?: Maybe<Array<(
       { __typename?: 'FieldError' }
       & Pick<FieldError, 'field' | 'message'>
-    )>> }
+    )>>, user?: Maybe<(
+      { __typename?: 'User' }
+      & RegularUserFragment
+    )> }
   ) }
 );
 
@@ -177,12 +177,12 @@ export const RegularUserFragmentDoc = gql`
 export const LoginDocument = gql`
     mutation Login($options: UsernamePasswordInput!) {
   login(options: $options) {
-    user {
-      ...RegularUser
-    }
     errors {
       field
       message
+    }
+    user {
+      ...RegularUser
     }
   }
 }
