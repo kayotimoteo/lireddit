@@ -7,9 +7,13 @@ import {
   ListIcon,
   ListItem,
 } from '@chakra-ui/core'
+import NavBar from '../components/NavBar'
 
 const Index = () => (
-  <div>Hello World</div>
+  <>
+    <NavBar/>
+    <div>Hello World</div>
+  </>
 )
 
 export default Index

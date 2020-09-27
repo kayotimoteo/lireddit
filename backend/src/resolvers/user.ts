@@ -3,7 +3,8 @@ import { MyContext } from "src/types";
 import { User } from "../entities/User";
 
 import argon2 from 'argon2'
-
+import { EntityManager } from '@mikro-orm/postgresql'
+import { COOKIE_NAME } from "../constants";
 
 @InputType()
 class UsernamePasswordInput {
@@ -68,14 +69,19 @@ export class UserResolver {
     }
 
     const hashedPassword = await argon2.hash(options.password)
-
-    const user = em.create(User, {username: options.username, password: hashedPassword})
-
+    let user;
     try{
-      await em.persistAndFlush(user);
-     
+      const result = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert(
+        {
+          username: options.username, 
+          password: hashedPassword,
+          created_at: new Date(),
+          updated_at: new Date(),
+        }
+      ).returning('*')
+      user = result[0]
     }catch(err){
-      if(err.code === '23505' || err.detail.includes('already exists')){
+      if(err.detail.includes('already exists')){
         return {
           errors: [
             {
@@ -126,5 +132,21 @@ export class UserResolver {
     return {
       user,
     }
+  }
+
+  @Mutation(()=> Boolean)
+  logout(
+    @Ctx() { req, res }: MyContext){
+
+    return new Promise(resolve => req.session.destroy(err => {
+      res.clearCookie(COOKIE_NAME)
+      if(err) {
+        console.log(err)
+        resolve(false)
+        return
+      }
+      resolve(true)
+    }
+    ))
   }
 }
